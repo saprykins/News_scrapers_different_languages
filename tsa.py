@@ -1,68 +1,24 @@
-import scrapy
-"""
-selectors for main-tsa-page
+# to get the site’s HTML code into your Python script so that you can interact with it to have local html code in python-object
+import requests
+from bs4 import BeautifulSoup
 
-time
-response.css("time.ntdga__date::attr(datetime)")[0].get()
-response.css("article time.ntdga__date::attr(datetime)")[0].get()
+URL = "https://www.tsa-algerie.com/politique/"
+# requests get html-content
+page = requests.get(URL)
 
-title
-response.css(".ntdga__title a::text")[0].get()
-response.css("article.ntdga a::text")[0].get()
+# html.parser make choice between html, xml. Page.content is better than page.text because of encoding
+soup = BeautifulSoup(page.content, "html.parser")
 
-subject
-response.css(".ntdga__date a::text")[0].get()
-response.css("article .ntdga__date a::text")[0].get()
-"""
+# results are all the articles w/ limits, lower in stack is an article
+results = soup.find_all('h1', class_="transition")
 
-class QuotesSpider(scrapy.Spider):
-    name = 'tsa_news'
-    start_urls = [
-        'https://www.tsa-algerie.com/'
-        #'https://www.tsa-algerie.com/politique/'
-    ]
+for article in results:
+    title_element = article.find('a').text
+    link_element = article.find('a')['href']
 
-    def parse(self, response):
-        # selector".title-middle a" has much trash in addition to titles,
-        # and works better than ".transition a"
-
-        # for quote in response.css('.title-middle a'): # doesn't work with main-tsa-page
-        for quote in response.css('article'): # shows only 3
-
-        # for quote in response.css('.article a'): # shows nothing
-        # for quote in response.css('article.article-preview'): # shows nothing
-        # for quote in response.css('.transition a'):# shows nothing
-            yield {
-                #'header': quote.css('::text').get(), it worked
-                #'link': quote.css('a ::attr(href)').get() #it worked
-
-                # getting publish time
-                #'date':
-                #'link': quote.css('::text').get()
-                #'header': quote.css('a ::text').get() works well
-                #'header': quote.css('a ::href').get() doesn't work
-                #'link': quote.css('a href').get() empty list
-
-                # title
-                #'title': response.css(".ntdga a::text")[0].get(), # selector found on page, shows the same info #-times
-                'title': quote.css(".ntdga__title a::text")[0].get(),
-
-                # time
-                'time': quote.css("time.ntdga__date::attr(datetime)").get(),
-
-                # subject
-                'subject': quote.css(".ntdga__date a::text")[0].get()
-            }
-"""
-doesn't work though due to a wrong selector
-quote = response.css("h1.article-preview__title title-middle transition")[0]
-text = quote.css("a::text").get()
-link = quote.css("a").attrib['href'].get()
-"""
-
-"""
-let's keep it
-quote = response.css('.title-middle a')[0] # works
-text = quote.css("::text").get() # works
-link = quote.css('a').attrib['href'] # works
-"""
+    #checking time from page given by a link
+    page_to_get_publish_time = requests.get(link_element)
+    soup = BeautifulSoup(page_to_get_publish_time.content, "html.parser")
+    date_code_verb = soup.find('time', class_="article__meta-time")["datetime"]
+    date_code = date_code_verb[5:10] + ' ' + date_code_verb[11:16]
+    print(date_code, ' ', title_element)
