@@ -6,17 +6,20 @@ import pandas as pd
 # import time-package
 from datetime import datetime
 
-URL = "https://www.tsa-algerie.com/politique/"
+URL = "https://www.aps.dz/algerie"
 # requests get html-content
 page = requests.get(URL)
-
+print(page)
 # html.parser make choice between html, xml. Page.content is better than page.text because of encoding
-soup = BeautifulSoup(page.content, "html.parser")
+# soup = BeautifulSoup(page.content, "html.parser")
 
 # results are all the articles w/ limits, lower in stack is an article
-results = soup.find_all('h1', class_="title-middle")
+# results = soup.find_all("div", class_="catItemView")
+#selector proposed "itemListLeading a" for all titles
+# print(results)
 
 # storage lists
+"""
 titles=[]
 links=[]
 dates=[]
@@ -24,7 +27,8 @@ dates=[]
 for article in results:
     title_element = article.find('a').text
     link_element = article.find('a')['href']
-
+    date_element = article.find('catItemDateCreated')
+    
     #checking time from page given by a link
     page_to_get_publish_time = requests.get(link_element)
     soup = BeautifulSoup(page_to_get_publish_time.content, "html.parser")
@@ -49,3 +53,4 @@ ds = df.sort_values(by="Date", ascending=False)
 
 # save to file
 ds.to_csv('tsa-news.csv', index=False, encoding='utf-8')
+"""
